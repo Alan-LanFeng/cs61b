@@ -1,112 +1,178 @@
-public class LinkedListDeque<T> {
-    private Node sentinel;
-    private int size;
+/**
+ * LinkedListDeque
+ */
 
-    private class Node {
-        private Node prev;
+public class LinkedListDeque<T> {
+
+    private class TNode {
         private T item;
-        private Node next;
-        private Node(T i, Node p, Node n) {
-            item = i;
+        private TNode prev;
+        private TNode next;
+
+        private TNode(T x, TNode p, TNode n) {
+            item = x;
             prev = p;
             next = n;
         }
     }
 
+    /**
+     *  The first item (if it exists) in the deque is the sentinel.next
+     */
+    private TNode sentinel;
+    private int size;
+
+    /**
+     * Create an empty deque
+     */
     public LinkedListDeque() {
-        sentinel = new Node(null, null, null);
-        sentinel.next = sentinel;
+        sentinel = new TNode(null, null, null);
         sentinel.prev = sentinel;
+        sentinel.next = sentinel;
         size = 0;
     }
 
-    public LinkedListDeque(T item) {
-        sentinel = new Node(null, null, null);
-        sentinel.next = new Node(item, sentinel.next, sentinel.prev);
-        size = 1;
-    }
-
-    public void addFirst(T item) {
-        size += 1;
-        sentinel.next = new Node(item, sentinel, sentinel.next);
-        sentinel.next.next.prev = sentinel.next;
-    }
-
-    public void addLast(T item) {
-        size += 1;
-        sentinel.prev = new Node(item, sentinel.prev, sentinel);
-        sentinel.prev.prev.next = sentinel.prev;
-    }
-
-    public boolean isEmpty() {
-        if (size == 0) {
-            return true;
-        }
-        return false;
-    }
-
+    /**
+     * Return the number of items in the deque
+     */
     public int size() {
         return size;
     }
 
-    public void printDeque() {
-        Node p = new Node(sentinel.next.item, sentinel, sentinel.next.next);
-        while (p.next != sentinel.next) {
-            System.out.print(p.item + " ");
-            p = p.next;
-        }
-        System.out.print("\n");
+    /**
+     * Return true if deque is empty, false otherwise
+     */
+    public boolean isEmpty() {
+        return size == 0;
     }
 
+    /**
+     * Add an item of type T to the front of the deque
+     */
+    public void addFirst(T item) {
+        sentinel.next = new TNode(item, sentinel, sentinel.next);
+        sentinel.next.next.prev = sentinel.next;
+        size += 1;
+    }
+
+    /**
+     * Add an item of type T to the back of the deque
+     */
+    public void addLast(T item) {
+        sentinel.prev = new TNode(item, sentinel.prev, sentinel);
+        sentinel.prev.prev.next = sentinel.prev;
+        size += 1;
+    }
+
+    /**
+     * Remove and return the item at the front of the deque
+     * If no such item exists, return null
+     */
     public T removeFirst() {
-        if (size != 0) {
-            sentinel.next = sentinel.next.next;
-            sentinel.next.next.prev = sentinel.next;
-            size--;
-            return sentinel.next.item;
+        T toRemove = sentinel.next.item;
+        sentinel.next.next.prev = sentinel;
+        sentinel.next = sentinel.next.next;
+        if (!isEmpty()) {
+            size -= 1;
         }
-        return null;
+        return toRemove;
+
     }
 
+    /**
+     * Remove and return the item at the back of the deque
+     * If no such item exists, return null
+     */
     public T removeLast() {
-        if (size != 0) {
-            sentinel.prev = sentinel.prev.prev;
-            sentinel.prev.prev.next = sentinel.prev;
-            size--;
-            return sentinel.prev.item;
+        T toRemove = sentinel.prev.item;
+        sentinel.prev.prev.next = sentinel;
+        sentinel.prev = sentinel.prev.prev;
+        if (!isEmpty()) {
+            size -= 1;
         }
-        return null;
+        return toRemove;
     }
 
+    /**
+     * Print the items in the deque from first to last, separated by a space
+     * Once all the items have been printed, print out a new line
+     */
+    public void printDeque() {
+        TNode toPrint = sentinel.next;
+        for (int i = 0; i < size; i++) {
+            System.out.print(toPrint.item + " ");
+            toPrint = toPrint.next;
+        }
+        System.out.println();
+    }
+
+    /**
+     * Get the item at the given index, where 0 is the front,
+     * 1 is the next item, and so forth. I fno such item exists,
+     * return null. Must not alter the deque
+     */
     public T get(int index) {
-        Node p = new Node(sentinel.next.item, sentinel.next.prev, sentinel.next.next);
-        while (index > 0) {
-            index--;
-            p = p.next;
+        TNode toGet = sentinel.next;
+        for (int i = 0; i < index; i++) {
+            toGet = toGet.next;
         }
-        return  p.item;
+        return toGet.item;
     }
 
-    public LinkedListDeque(LinkedListDeque other) {
-        sentinel = new Node(null, null, null);
-        sentinel.next = sentinel;
-        sentinel.prev = sentinel;
-        size = 0;
-        for (int i = 0; i < other.size; i++) {
-            addLast((T) other.get(i));
-        }
-    }
+    /**
+     * Same as get, but uses recursion
+     * First, need a private helper method
+     */
+    private T getRecursive(int index, TNode curr) {
 
-    private T helper(Node p, int index) {
-        while (index != 0) {
-            index--;
-            return helper(p.next, index);
+        if (index == 0) {
+            return curr.item;
         }
-        return p.item;
+        return getRecursive(index - 1, curr.next);
     }
 
     public T getRecursive(int index) {
-        Node p = new Node(sentinel.next.item, sentinel.next.prev, sentinel.next.next);
-        return helper(p, index);
+        return getRecursive(index, sentinel.next);
     }
+
+    /**
+     * Create a deep copy of other
+     */
+    public LinkedListDeque(LinkedListDeque other) {
+        sentinel = new TNode(null, null, null);
+        sentinel.prev = sentinel;
+        sentinel.next = sentinel;
+        size = 0;
+
+        for (int i = 0; i < other.size(); i++) {
+            addLast((T) other.get(i)); // (T) is cast, since type of other is unknown
+        }
+    }
+
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
